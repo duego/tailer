@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+	<head>
+		<style type="text/css">
+			body {
+				text-align: left;
+				font-family: symbol verdana arial;
+				font-size: 14px;
+				position: absolute;
+				padding-left: 50px;
+				text-indent: -50px;
+				top: 0;
+				bottom: 0;
+				right: 0;
+				left: 0;
+				overflow-y: scroll;
+			}
+			
+			.line.nginx {
+				color: gray;
+			}
+			.line.fatal {
+				color: red;
+			}
+
+			#autoscroll {
+				position: fixed;
+				top: 5px;
+				right: 5px;
+			}
+		</style>
+
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script>
+			var newline = function(data) {
+			};
+
+			$(document).ready(function() {
+				var autoscroll = true;
+				var socket = io.connect('//');
+				socket.on('msg', function (message) {
+					var div = $('<div class="line">' + message.data + '</div>');
+					if (message.data.indexOf('nginx') != -1) {
+						$(div).addClass('nginx');
+						if (message.data.indexOf(' 500 ') != -1) {
+							$(div).addClass('fatal');
+						}
+					} else if (message.data.indexOf('PHP Fatal error') != -1) {
+						$(div).addClass('fatal');
+					} else if (message.data.indexOf('xception') != -1 ) {
+						$(div).addClass('fatal');
+					}
+					$('body').append(div);
+
+					if (autoscroll) {
+						window.scroll(0, document.height);
+					}
+				});
+
+				$('#autoscroll').toggle(function() {
+					autoscroll = false;
+				}, function() {
+					autoscroll = true;
+				});
+			});
+	</script>
+	</head>
+
+	<body>
+		<button id="autoscroll">Toggle autoscroll</button>
+		<div id="log">
+		</div>
+	</body>
+</html>

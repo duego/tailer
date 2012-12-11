@@ -1,0 +1,16 @@
+{
+	"name": "file-tailer",
+	"version": "0.0.1",
+	"description": "File tail server",
+	"author": "Johnny Bergström",
+	"homepage": "https://github.com/duego/tailer",
+	"private": true,
+	"dependencies": {
+		"socket.io": ">=0.9.11"
+	},
+	"repository": {
+		"type" : "git",
+		"url" : "https://github.com/duego/tailer.git"
+	},
+	"engine": "node 0.8.6"
+}
