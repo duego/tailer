@@ -17,7 +17,6 @@
 			.line {
 				padding-left: 50px;
 				text-indent: -50px;
-				white-space: pre;
 			}
 			.line.nginx {
 				color: gray;
@@ -49,8 +48,8 @@
 				var match = /./;
 
 				socket.on('msg', function (message) {
-					var div = $('<div class="line"></div>');
-					$(div).text(message.data);
+					var $div = $('<div class="line"></div>');
+					$div.text(message.data);
 
 					if (! match.test(message.data)) {
 						$(div).addClass('filtered');
@@ -64,9 +63,6 @@
 						$div.addClass('fatal');
 					} else if (message.data.indexOf('xception') != -1 ) {
 						$div.addClass('fatal');
-					}
-					if (message.data.indexOf('\n') != -1 ) {
-						$div.addClass('multiple');
 					}
 
 					$body.append($div);
