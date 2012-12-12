@@ -28,8 +28,11 @@
 			.multiple {
 				margin-bottom: 5px;
 			}
+			.line.filtered {
+				display: none;
+			}
 
-			#autoscroll {
+			#controls {
 				position: fixed;
 				top: 5px;
 				right: 5px;
@@ -43,11 +46,15 @@
 				var $body = $('body');
 				var autoscroll = true;
 				var socket = io.connect('//');
+				var match = /./;
 
 				socket.on('msg', function (message) {
 					var div = $('<div class="line"></div>');
 					$(div).text(message.data);
 
+					if (! match.test(message.data)) {
+						$(div).addClass('filtered');
+					}
 					if (message.data.indexOf('nginx') != -1) {
 						$div.addClass('nginx');
 						if (message.data.indexOf(' 500 ') != -1) {
@@ -74,13 +81,37 @@
 				}, function() {
 					autoscroll = true;
 				});
+
+				$('#regexaction').click(function() {
+					try {
+						match = new RegExp($('#regex').attr('value'));
+						$('div.line').each(function(i, e) {
+							if (match.test($(e).text())) {
+								$(e).removeClass('filtered');
+							} else {
+								$(e).addClass('filtered');
+							}
+						});
+					} catch(error) {
+						$('#regex').addClass('fatal');
+						console.error("Invalid regexp: " + error);
+						return;
+					}
+					$('#regex').removeClass('fatal');
+				});
 			});
 	</script>
 	</head>
 
 	<body>
-		<button id="autoscroll">Toggle autoscroll</button>
-		<div id="log">
+		<div id="controls">
+			<fieldset>
+				<legend>Controls</legend>
+				Regex filter: <input id="regex" value="."/>
+				<button id="regexaction">Filter</button>
+				<button id="autoscroll">Toggle autoscroll</button>
+			</fieldset>
 		</div>
+		<div id="log"></div>
 	</body>
 </html>
