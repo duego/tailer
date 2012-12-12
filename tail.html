@@ -36,6 +36,9 @@
 				top: 5px;
 				right: 5px;
 			}
+			#placeholder {
+				float: right;
+			}
 		</style>
 
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
@@ -95,6 +98,11 @@
 					}
 					$('#regex').removeClass('fatal');
 				});
+
+				$('#placeholder').css({
+					width: $('#controls').css('width'),
+					height: $('#controls').css('height'),
+				});
 			});
 	</script>
 	</head>
@@ -108,6 +116,7 @@
 				<button id="autoscroll">Toggle autoscroll</button>
 			</fieldset>
 		</div>
+		<div id="placeholder"></div>
 		<div id="log"></div>
 	</body>
 </html>
