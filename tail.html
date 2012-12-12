@@ -45,7 +45,8 @@
 				var socket = io.connect('//');
 
 				socket.on('msg', function (message) {
-					var $div = $('<div class="line">' + message.data + '</div>');
+					var div = $('<div class="line"></div>');
+					$(div).text(message.data);
 
 					if (message.data.indexOf('nginx') != -1) {
 						$div.addClass('nginx');
