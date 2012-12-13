@@ -30,6 +30,7 @@
 			#log > .filtered {
 				color: #888;
 				border-left-color: #999;
+				display: none;
 			}
 
 			#log > .highlight {
@@ -88,7 +89,21 @@
 					((i >> 0)  & 0xFF).toString(16);
 			}
 
-			var logline = function(message) {
+			function match_line(element) {
+				if (active_regexp.test('x')) {
+					return;
+				}
+
+				if (active_regexp.test($(element).text())) {
+					$(element).removeClass('filtered');
+					$(element).addClass('highlight');
+				} else {
+					$(element).addClass('filtered');
+					$(element).removeClass('highlight');
+				}
+			}
+
+			function logline(message) {
 				var line = $('<div></div>');
 				var pre = $('<pre></pre>');
 				pre.text(message.data.trim());
@@ -123,8 +138,12 @@
 					line.addClass('fatal');
 				}
 
+				match_line(line);
+
 				return line;
-			};
+			}
+
+			var active_regexp = /./;
 
 			$(document).ready(function() {
 				var autoscroll = true;
@@ -156,14 +175,9 @@
 						}
 
 						var match = new RegExp(regexp);
+						active_regexp = match;
 						$('#log > div').each(function(i, e) {
-							if (match.test($(e).text())) {
-								$(e).removeClass('filtered');
-								$(e).addClass('highlight');
-							} else {
-								$(e).addClass('filtered');
-								$(e).removeClass('highlight');
-							}
+							match_line(e);
 						});
 					} catch(error) {
 						$('#regexp').addClass('fatal');
