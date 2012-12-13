@@ -37,7 +37,7 @@ tail_pipe.stdout.on("data", function(data) {
 			continue;
 		}
 		buffer_index = (buffer_index + 1) % buffer_size;
-		circular_buffer[buffer_index] = line;
+		circular_buffer[buffer_index] = lines[i];
 		tail.emit('data', buffer_index);
 	}
 });
