@@ -5,70 +5,124 @@
 			body {
 				text-align: left;
 				font-family: monospace;
-				font-size: 13px;
-				position: absolute;
-				top: 0;
-				bottom: 0;
-				right: 0;
-				left: 0;
-				overflow-y: scroll;
+				font-size: 12px;
 			}
 
-			.line {
-				padding-left: 50px;
-				text-indent: -50px;
-			}
-			.line.nginx {
+			#log > .nginx {
 				color: gray;
 			}
-			.line.fatal {
+
+			#log > .fatal {
 				color: red;
 			}
-			.multiple {
-				margin-bottom: 5px;
+
+			#log > .info {
+				border-left-color: yellow;
 			}
-			.line.filtered {
-				display: none;
+
+			#log > .divider {
+				color: transparent;
+				background: #333;
+				border-color: #333;
+				height: 0px;
+			}
+
+			#log > .filtered {
+				color: #888;
+				border-left-color: #999;
+			}
+
+			#log > .highlight {
+				background: #E6EFDE;
+				color: #24400B;
+				border-left-color: lawngreen;
+			}
+
+			#log > div {
+				border-left: 2px solid #232323;
+				padding-left: 5px;
+				margin: 2px;
+				border-bottom: 1px dashed #ccc;
 			}
 
 			#controls {
+				background: #fff;
 				position: fixed;
 				top: 5px;
 				right: 5px;
 			}
-			#placeholder {
-				float: right;
+
+			fieldset {
+				border: 1px solid black;
 			}
 		</style>
 
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<title>.lan logs</title>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
 		<script>
+			function make_matcher(haystack) {
+				return function(needle) {
+					return haystack.indexOf(needle) != -1;
+				}
+			}
+
+			function hashCode(str) { // java String#hashCode
+				var hash = 0;
+				for (var i = 0; i < str.length; i++) {
+					hash = str.charCodeAt(i) + ((hash << 5) - hash);
+				}
+				return hash;
+			}
+
+			function intToARGB(i) {
+				return '' +
+					((i >> 16) & 0xFF).toString(16) +
+					((i >> 8)  & 0xFF).toString(16) +
+					((i >> 0)  & 0xFF).toString(16);
+			}
+
+			var logline = function(message) {
+				var line = $('<div></div>');
+				line.text(message.data);
+
+				var color = 0xff0000;
+				line.css('border-left-color', color);
+
+				var sourceReg = new RegExp(/(\S+ ){4}([^ ]+)/);
+				if (sourceReg.test(message.data)) {
+					var match = sourceReg.exec(message.data);
+					var source = match[1];
+					line.css('border-left-color', '#' + intToARGB(hashCode(source)));
+				}
+
+				var matches = make_matcher(message.data);
+				var class_map = {
+					'nginx': 'nginx',
+					'PHP Fatal error': 'fatal',
+					'xception': 'fatal',
+					'[info]': 'info',
+					'------------------': 'divider',
+				};
+
+				for (var match in class_map) {
+					if (matches(match)) {
+						line.addClass(class_map[match]);
+					}
+				}
+
+				if (matches('nginx') && matches(' 500 ')) {
+					line.addClass('fatal');
+				}
+
+				return line;
+			};
+
 			$(document).ready(function() {
-				var $body = $('body');
 				var autoscroll = true;
 				var socket = io.connect('//');
-				var match = /./;
-
 				socket.on('msg', function (message) {
-					var $div = $('<div class="line"></div>');
-					$div.text(message.data);
-
-					if (! match.test(message.data)) {
-						$(div).addClass('filtered');
-					}
-					if (message.data.indexOf('nginx') != -1) {
-						$div.addClass('nginx');
-						if (message.data.indexOf(' 500 ') != -1) {
-							$div.addClass('fatal');
-						}
-					} else if (message.data.indexOf('PHP Fatal error') != -1) {
-						$div.addClass('fatal');
-					} else if (message.data.indexOf('xception') != -1 ) {
-						$div.addClass('fatal');
-					}
-
-					$body.append($div);
+					$('#log').append(logline(message));
 
 					if (autoscroll) {
 						window.scroll(0, document.height);
@@ -81,28 +135,43 @@
 					autoscroll = true;
 				});
 
-				$('#regexaction').click(function() {
+				var regexp_filter = function() {
+					$('#log > div').each(function(i, e) {
+						$(e).removeClass('filtered');
+						$(e).removeClass('highlight');
+					});
+
 					try {
-						match = new RegExp($('#regex').attr('value'));
-						$('div.line').each(function(i, e) {
+						var regexp = $('#regexp').attr('value');
+						if (regexp == '.' || regexp == '') {
+							return;
+						}
+
+						var match = new RegExp(regexp);
+						$('#log > div').each(function(i, e) {
 							if (match.test($(e).text())) {
 								$(e).removeClass('filtered');
+								$(e).addClass('highlight');
 							} else {
 								$(e).addClass('filtered');
+								$(e).removeClass('highlight');
 							}
 						});
 					} catch(error) {
-						$('#regex').addClass('fatal');
+						$('#regexp').addClass('fatal');
 						console.error("Invalid regexp: " + error);
 						return;
 					}
-					$('#regex').removeClass('fatal');
+					$('#regexp').removeClass('fatal');
+				};
+
+				$('#regexpaction').click(regexp_filter);
+				$('#regexp').keypress(function(event) {
+					if (event.keyCode == 13) {
+						regexp_filter();
+					}
 				});
 
-				$('#placeholder').css({
-					width: $('#controls').css('width'),
-					height: $('#controls').css('height'),
-				});
 			});
 	</script>
 	</head>
@@ -111,12 +180,11 @@
 		<div id="controls">
 			<fieldset>
 				<legend>Controls</legend>
-				Regex filter: <input id="regex" value="."/>
-				<button id="regexaction">Filter</button>
+				Regexp filter: <input id="regexp" value="."/>
+				<button id="regexpaction">Filter</button>
 				<button id="autoscroll">Toggle autoscroll</button>
 			</fieldset>
 		</div>
-		<div id="placeholder"></div>
 		<div id="log"></div>
 	</body>
 </html>
