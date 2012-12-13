@@ -95,6 +95,7 @@
 			}
 
 			function match_line(element) {
+				// XXX: If it matches this crazy thing it probably matches anything.
 				if (active_regexp.test('x')) {
 					return;
 				}
@@ -178,6 +179,10 @@
 					$('#log > div').each(function(i, e) {
 						$(e).removeClass('filtered');
 						$(e).removeClass('highlight');
+
+						// Remove old highlights...
+						var text = $(e).data('original');
+						$(e).find('pre').html(text);
 					});
 
 					try {
