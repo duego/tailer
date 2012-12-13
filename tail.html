@@ -55,6 +55,12 @@
 			fieldset {
 				border: 1px solid black;
 			}
+
+			pre {
+				margin: 0;
+				padding: 0;
+				overflow: auto;
+			}
 		</style>
 
 		<title>.lan logs</title>
@@ -84,7 +90,9 @@
 
 			var logline = function(message) {
 				var line = $('<div></div>');
-				line.text(message.data);
+				var pre = $('<pre></pre>');
+				pre.text(message.data.trim());
+				line.append(pre);
 
 				var color = 0xff0000;
 				line.css('border-left-color', color);

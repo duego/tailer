@@ -25,21 +25,18 @@ var buffer_index = 0;
 var Tailer = EventEmitter;
 var tail = new Tailer();
 
-var tail_pipe = spawn("tail", ["-f", '-n', buffer_size, filename]);
+var tail_pipe = spawn("tail", ["-f", filename]);
 tail_pipe.stdout.setEncoding('utf8');
 console.log("Tailing " + filename);
 
 tail_pipe.stdout.on("data", function(data) {
-	var lines = data.split('\n');
-	for (var i = 0; i < lines.length; i++) {
-		var line = lines[i].trim()
-		if (line == "") {
-			continue;
-		}
-		buffer_index = (buffer_index + 1) % buffer_size;
-		circular_buffer[buffer_index] = lines[i];
-		tail.emit('data', buffer_index);
+	var line = data.trim();
+	if (line == "") {
+		return;
 	}
+	buffer_index = (buffer_index + 1) % buffer_size;
+	circular_buffer[buffer_index] = line;
+	tail.emit('data', buffer_index);
 });
 
 app.listen(port);
