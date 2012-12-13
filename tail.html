@@ -103,7 +103,8 @@
 					$(element).removeClass('filtered');
 					$(element).addClass('highlight');
 
-					var text = $(element).find('pre').html();
+					// Get pristine copy of text...
+					var text = $(element).data('original');
 					text = text.replace(active_regexp, "<span class='match'>$&</span>");
 					$(element).find('pre').html(text);
 				} else {
@@ -117,6 +118,8 @@
 				var pre = $('<pre></pre>');
 				pre.text(message.data.trim());
 				line.append(pre);
+
+				line.data('original', pre.html());
 
 				var color = 0xff0000;
 				line.css('border-left-color', color);
