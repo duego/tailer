@@ -53,6 +53,11 @@
 				right: 5px;
 			}
 
+			span.match {
+				background: #F1BFD8;
+				color: #490426;
+			}
+
 			fieldset {
 				border: 1px solid black;
 			}
@@ -97,6 +102,10 @@
 				if (active_regexp.test($(element).text())) {
 					$(element).removeClass('filtered');
 					$(element).addClass('highlight');
+
+					var text = $(element).find('pre').html();
+					text = text.replace(active_regexp, "<span class='match'>$&</span>");
+					$(element).find('pre').html(text);
 				} else {
 					$(element).addClass('filtered');
 					$(element).removeClass('highlight');
@@ -112,7 +121,7 @@
 				var color = 0xff0000;
 				line.css('border-left-color', color);
 
-				var sourceReg = new RegExp(/(\S+ ){4}([^ ]+)/);
+				var sourceReg = new RegExp(/(?:\S+ ){4}([^ ]+)/);
 				if (sourceReg.test(message.data)) {
 					var match = sourceReg.exec(message.data);
 					var source = match[1];
@@ -174,7 +183,7 @@
 							return;
 						}
 
-						var match = new RegExp(regexp);
+						var match = new RegExp(regexp, 'g');
 						active_regexp = match;
 						$('#log > div').each(function(i, e) {
 							match_line(e);
@@ -194,6 +203,7 @@
 					}
 				});
 
+				$('#regexp').focus();
 			});
 	</script>
 	</head>
