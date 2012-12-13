@@ -95,6 +95,10 @@
 			}
 
 			function match_line(element) {
+				if (active_regexp == null) {
+					return;
+				}
+
 				// XXX: If it matches this crazy thing it probably matches anything.
 				if (active_regexp.test('x')) {
 					return;
@@ -156,7 +160,7 @@
 				return line;
 			}
 
-			var active_regexp = /./;
+			var active_regexp = null;
 
 			$(document).ready(function() {
 				var autoscroll = true;
@@ -185,14 +189,14 @@
 						$(e).find('pre').html(text);
 					});
 
-					try {
-						var regexp = $('#regexp').attr('value');
-						if (regexp == '.' || regexp == '') {
-							return;
-						}
+					active_regexp = null;
+					var regexp = $('#regexp').attr('value');
+					if (regexp == '.' || regexp == '') {
+						return;
+					}
 
-						var match = new RegExp(regexp, 'g');
-						active_regexp = match;
+					try {
+						active_regexp = new RegExp(regexp, 'g');
 						$('#log > div').each(function(i, e) {
 							match_line(e);
 						});
