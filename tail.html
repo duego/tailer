@@ -173,6 +173,12 @@
 					}
 				});
 
+				socket.on("info", function(info) {
+					if ("undefined" != typeof info["title"]) {
+						document.title = info["title"];
+					}
+				});
+
 				$('#autoscroll').toggle(function() {
 					autoscroll = false;
 				}, function() {

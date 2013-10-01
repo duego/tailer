@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 var app = require('http').createServer(handler),
+	os = require("os"),
 	io = require('socket.io').listen(app),
 	fs = require('fs'),
 	sys = require('sys'),
@@ -21,6 +22,11 @@ if (! port) {
 var circular_buffer = [];
 var buffer_size = 25;
 var buffer_index = 0;
+
+// Generate an appropriate title for connected clients.
+var generateTitle = function() {
+	return "Logs at " + os.hostname();
+};
 
 var Tailer = EventEmitter;
 var tail = new Tailer();
@@ -54,6 +60,7 @@ function handler(req, res) {
 }
 
 io.sockets.on('connection', function(socket) {
+	socket.emit("info", {title: generateTitle()});
 	socket.emit('msg', { data: "tailing " + filename });
 	socket.emit('msg', { data: "------------------" });
 
