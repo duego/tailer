@@ -25,7 +25,7 @@ var buffer_index = 0;
 
 // Generate an appropriate title for connected clients.
 var generateTitle = function() {
-	return "Logs at " + os.hostname();
+	return os.hostname() + " logs";
 };
 
 var Tailer = EventEmitter;
