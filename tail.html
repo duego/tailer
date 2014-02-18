@@ -78,6 +78,14 @@
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
 		<script>
+			var logsLimit = 1000,
+				logsCount = 0,
+				$log, m;
+
+			if (m = window.location.search.match(/limit=(\d+)/)) {
+				logsLimit = parseInt(m[1]);
+			}
+
 			function make_matcher(haystack) {
 				return function(needle) {
 					return haystack.indexOf(needle) != -1;
@@ -165,13 +173,26 @@
 				return line;
 			}
 
+			function cleanLogs() {
+				if (logsCount < logsLimit) {
+					return;
+				}
+
+				var cleanCount = Math.floor(logsCount * 0.25);
+				$log.children().slice(2, cleanCount + 2).remove();
+				logsCount -= cleanCount;
+			}
+
 			var active_regexp = null;
 
 			$(document).ready(function() {
+				$log = $('#log');
 				var autoscroll = true;
 				var socket = io.connect('//');
+
 				socket.on('msg', function (message) {
-					$('#log').append(logline(message));
+					$log.append(logline(message));
+					logsCount++;
 
 					if (autoscroll) {
 						window.scroll(0, document.body.scrollHeight);
@@ -184,6 +205,8 @@
 					}
 				});
 
+				setInterval(cleanLogs, 10000);
+
 				$('#autoscroll').toggle(function() {
 					autoscroll = false;
 				}, function() {
@@ -191,7 +214,7 @@
 				});
 
 				var regexp_filter = function() {
-					$('#log > div').each(function(i, e) {
+					$log.children().each(function(i, e) {
 						$(e).removeClass('filtered');
 						$(e).removeClass('highlight');
 
@@ -208,7 +231,7 @@
 
 					try {
 						active_regexp = new RegExp(regexp, 'g');
-						$('#log > div').each(function(i, e) {
+						$log.children().each(function(i, e) {
 							match_line(e);
 						});
 					} catch(error) {
